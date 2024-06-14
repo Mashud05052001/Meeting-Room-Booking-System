@@ -1,3 +1,5 @@
+import { Model } from 'mongoose';
+
 export type TRoom = {
   name: string;
   roomNo: number;
@@ -7,3 +9,7 @@ export type TRoom = {
   amenities: string[];
   isDeleted?: boolean;
 };
+
+export interface TRoomModel extends Model<TRoom> {
+  findRoom(id: string): Promise<TRoom>;
+}

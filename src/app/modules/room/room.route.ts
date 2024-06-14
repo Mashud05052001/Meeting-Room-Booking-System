@@ -7,14 +7,18 @@ import { RoomController } from './room.scontroller';
 const router = Router();
 
 router.post(
-  '/rooms',
+  '/',
   validateRequest(RoomValidation.createRoomValidationSchema),
   RoomController.createRoom,
 );
 
-router.get('/rooms', RoomController.getAllRooms);
-router.get('/rooms/:id', RoomController.getSingleRoom);
-router.put('/rooms/:id', RoomController.updateRoom);
-router.delete('/rooms/:id', RoomController.deleteRoom);
+router.get('/', RoomController.getAllRooms);
+router.get('/:id', RoomController.getSingleRoom);
+router.put(
+  '/:id',
+  validateRequest(RoomValidation.updateRoomValidationSchema),
+  RoomController.updateRoom,
+);
+router.delete('/:id', RoomController.deleteRoom);
 
 export const RoomRoutes = router;

@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
-import { TRoom } from './room.interface';
+import { TRoom, TRoomModel } from './room.interface';
 
-const RoomSchema = new Schema<TRoom>({
+const roomSchema = new Schema<TRoom, TRoomModel>({
   name: {
     type: String,
     required: [true, 'Room name is required'],
@@ -32,4 +32,8 @@ const RoomSchema = new Schema<TRoom>({
   },
 });
 
-export const Room = model<TRoom>('Room', RoomSchema);
+roomSchema.statics.findRoom = async function (id: string) {
+  return await Room.findById(id);
+};
+
+export const Room = model<TRoom, TRoomModel>('Room', roomSchema);
