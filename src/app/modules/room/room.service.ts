@@ -16,10 +16,10 @@ const getAllRoomsFromDB = async () => {
 
 const getSingleRoomFromDB = async (id: string) => {
   const result = await Room.findById(id);
-  // TODO : implements deleted condition with error filtering here
-  //   if (result?.isDeleted) {
-  //     throw new AppError(httpStatus.CONFLICT, 'The room is already deleted');
-  //   }
+
+  if (result?.isDeleted) {
+    throw new AppError(httpStatus.CONFLICT, 'The room is already deleted');
+  }
   return result;
 };
 
@@ -50,6 +50,7 @@ const updateRoomIntoDB = async (id: string, payload: Partial<TRoom>) => {
 };
 
 const deleteRoomFromDB = async (id: string) => {
+  // TODO : delete a room to delete all slots accordint the room
   const result = await Room.findByIdAndUpdate(
     id,
     { isDeleted: true },

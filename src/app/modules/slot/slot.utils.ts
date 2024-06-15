@@ -3,6 +3,10 @@ import AppError from '../../errors/ArrError';
 import { TSlot } from './slot.interface';
 
 export const checkValidDate = (payload: string) => {
+  const yearRegex = /^(19|20)\d\d-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+  const isValidFormat = yearRegex.test(payload);
+  if (!isValidFormat) return false;
+
   const date = new Date();
   const currentYear = date.getFullYear(),
     currentDate = date.getDate(),
