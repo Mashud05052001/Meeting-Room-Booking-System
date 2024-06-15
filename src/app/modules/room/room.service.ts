@@ -22,7 +22,11 @@ const getSingleRoomFromDB = async (id: string) => {
   }
   return result;
 };
-
+/*
+1. Check the existancy og the room
+2. Update premptive & non premptive data also
+3. Update the non premptive amenities with case insensitively
+*/
 const updateRoomIntoDB = async (id: string, payload: Partial<TRoom>) => {
   let result:
     | (Document<unknown, {}, TRoom> &

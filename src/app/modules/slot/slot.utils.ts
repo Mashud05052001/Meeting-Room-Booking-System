@@ -7,20 +7,14 @@ export const checkValidDate = (payload: string) => {
   const isValidFormat = yearRegex.test(payload);
   if (!isValidFormat) return false;
 
-  const date = new Date();
-  const currentYear = date.getFullYear(),
-    currentDate = date.getDate(),
-    currentMonth = date.getMonth() + 1,
-    currentFullDate = `${currentYear}-${currentMonth}-${currentDate}`;
   const providedDate = payload.split('-');
-  if (
-    Number(providedDate[0]) < currentYear ||
-    Number(providedDate[1]) < currentMonth ||
-    Number(providedDate[2]) < currentDate
-  ) {
+
+  const currentFullDate = new Date().toISOString();
+  const providedFullDate = `${providedDate[0]}-${providedDate[1]}-${providedDate[2]}T${currentFullDate.split('T')[1]}`;
+  if (new Date(currentFullDate) > new Date(providedFullDate)) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      `Slots creating date cannot be previous of current date ${currentFullDate}`,
+      `Slots creating date cannot be previous of current date ${currentFullDate.split('T')[0]}`,
     );
   }
   return true;

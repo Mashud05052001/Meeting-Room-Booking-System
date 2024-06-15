@@ -1,4 +1,3 @@
-import { NextFunction, Request, Response } from 'express';
 import { catchAsync } from '../utils/catchAsync';
 import { TUserRoles } from '../modules/user/user.constant';
 import AppError from '../errors/AppError';

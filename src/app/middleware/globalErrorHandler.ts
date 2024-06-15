@@ -1,15 +1,14 @@
 import { ErrorRequestHandler } from 'express';
 import { TErrorMessages } from '../interface/error';
 import config from '../config';
-import { ZodError, ZodIssue } from 'zod';
-import httpStatus from 'http-status';
+import { ZodError } from 'zod';
 import handleZodError from '../errors/handleZodError';
 import handleValidationError from '../errors/handleValidationError';
 import handleCastError from '../errors/handleCastError';
 import handleDuplicateError from '../errors/handleDuplicateError';
 import AppError from '../errors/AppError';
 
-const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
+const globalErrorHandler: ErrorRequestHandler = (err, _req, res, next) => {
   let statusCode = 500,
     message = `Something went wrong!`,
     errorMessages: TErrorMessages = [
@@ -55,7 +54,6 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     });
   } else {
     res.status(statusCode).json({
-      err,
       success: false,
       message,
       errorMessages,

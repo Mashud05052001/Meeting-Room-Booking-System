@@ -119,6 +119,7 @@ const getSingleUserBookingsFromDB = async (payload: JwtPayload) => {
 };
 
 /*
+unconfirmed -> confirmed -> canceled
 1. Check booking existancy & isDeleted status 
 
 Allow
@@ -324,12 +325,3 @@ export const BookingService = {
   updateBookingIntoDB,
   deleteBookingFromDB,
 };
-
-/*
-{
-  "date": "2024-08-15",
-  "slots": ["666cc62ad75fbcf7e4de8d88"],
-  "room": "666c7ea9186edf424f4990c6",
-  "user": "666d29b55f743c1a29d86e7a"
-}
- */

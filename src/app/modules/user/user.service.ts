@@ -2,7 +2,6 @@ import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
 import { TUser } from './user.interface';
 import { User } from './user.model';
-import jwt from 'jsonwebtoken';
 import { createJwtToken } from './user.utils';
 import config from '../../config';
 

@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import { TErrorMessages } from '../interface/error';
 
 const handleDuplicateError = (error: { message: string }) => {
