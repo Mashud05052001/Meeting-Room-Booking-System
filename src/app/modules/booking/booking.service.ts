@@ -1,5 +1,5 @@
 import httpStatus from 'http-status';
-import AppError from '../../errors/ArrError';
+import AppError from '../../errors/AppError';
 import { User } from '../user/user.model';
 import { TBooking } from './booking.interface';
 import { Room } from '../room/room.model';

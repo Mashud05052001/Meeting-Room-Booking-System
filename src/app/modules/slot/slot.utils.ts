@@ -1,5 +1,5 @@
 import httpStatus from 'http-status';
-import AppError from '../../errors/ArrError';
+import AppError from '../../errors/AppError';
 import { TSlot } from './slot.interface';
 
 export const checkValidDate = (payload: string) => {

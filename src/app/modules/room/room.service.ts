@@ -1,5 +1,5 @@
 import httpStatus from 'http-status';
-import AppError from '../../errors/ArrError';
+import AppError from '../../errors/AppError';
 import { TRoom } from './room.interface';
 import { Room } from './room.model';
 import { Document, Types } from 'mongoose';

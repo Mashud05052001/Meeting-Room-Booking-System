@@ -1,5 +1,5 @@
 import { number, z } from 'zod';
-import AppError from '../../errors/ArrError';
+import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import {
   checkStartTimeIsBeforeOrNotEndTime,

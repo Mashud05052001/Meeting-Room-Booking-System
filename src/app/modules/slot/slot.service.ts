@@ -1,5 +1,5 @@
 import httpStatus from 'http-status';
-import AppError from '../../errors/ArrError';
+import AppError from '../../errors/AppError';
 import { Room } from '../room/room.model';
 import { TSlot } from './slot.interface';
 import { Slot } from './slot.model';
