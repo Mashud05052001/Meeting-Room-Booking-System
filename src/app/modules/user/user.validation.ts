@@ -41,7 +41,56 @@ const loginValidationSchema = z.object({
   }),
 });
 
+const changePasswordValidationSchema = z.object({
+  body: z.object({
+    oldPassword: z.string({
+      required_error: 'Old password is required',
+      invalid_type_error: 'Old password must be string',
+    }),
+    newPassword: z.string({
+      required_error: 'New password is required',
+      invalid_type_error: 'New password must be string',
+    }),
+  }),
+});
+
+const generateAccessTokenValidationSchema = z.object({
+  cookies: z.object({
+    refreshToken: z.string({
+      required_error: 'Refresh Token is required',
+    }),
+  }),
+});
+
+const forgetPasswordValidationSchema = z.object({
+  body: z.object({
+    email: z
+      .string({ required_error: 'User email is required' })
+      .email({ message: 'Provide a valid email' }),
+    phone: z.string({
+      required_error: 'User phone number is required',
+      invalid_type_error: 'User phone number must be string',
+    }),
+  }),
+});
+
+const resetPasswordValidationSchema = z.object({
+  body: z.object({
+    email: z
+      .string({ required_error: 'User email is required' })
+      .email({ message: 'Provide a valid email' }),
+    password: z.string({
+      required_error: 'User password is required',
+      invalid_type_error: 'User password must be string',
+    }),
+  }),
+});
+
 export const UserValidation = {
   signupValidationSchema,
   loginValidationSchema,
+  changePasswordValidationSchema,
+  generateAccessTokenValidationSchema,
+  forgetPasswordValidationSchema,
+  resetPasswordValidationSchema,
 };

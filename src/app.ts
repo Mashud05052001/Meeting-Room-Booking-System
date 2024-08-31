@@ -20,7 +20,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // all routes
-app.use('/api', allRoutes);
+app.use('/api/v1', allRoutes);
 
 // global error handler
 app.use(globalErrorHandler);
