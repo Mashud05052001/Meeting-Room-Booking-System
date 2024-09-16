@@ -41,6 +41,17 @@ const createRoomValidationSchema = z.object({
           'Amenities must contain an array of string elements',
       },
     ),
+    pictures: z.array(
+      z.string({
+        required_error: 'Room pictures url must required',
+        invalid_type_error: 'Room pictures url must be string',
+      }),
+      {
+        required_error: 'Room pictures url must required',
+        invalid_type_error:
+          'Room pictures must contain an array of string elements',
+      },
+    ),
   }),
 });
 

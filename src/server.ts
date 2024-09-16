@@ -2,13 +2,14 @@ import mongoose from 'mongoose';
 import { Server } from 'http';
 import app from './app';
 import config from './app/config';
+import seedSuperAdmin from './app/DB';
 const PORT = config.port || 5000;
 let server: Server;
 
 async function main() {
   try {
     await mongoose.connect(config.database_url as string);
-
+    seedSuperAdmin();
     server = app.listen(PORT, () => {
       console.log(`The server is running on ${PORT} port.`);
     });

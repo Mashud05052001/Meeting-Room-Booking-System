@@ -1,6 +1,6 @@
 import mongoose, { Schema, model } from 'mongoose';
 import { TBooking } from './booking.interface';
-import { bookingConfirmationStatus } from './booking.constant';
+import { bookingConfirmationStatus, paymentStatus } from './booking.constant';
 
 const bookingSchema = new Schema<TBooking>({
   room: {
@@ -37,6 +37,19 @@ const bookingSchema = new Schema<TBooking>({
   isDeleted: {
     type: Boolean,
     default: false,
+  },
+  paymentStatus: {
+    type: String,
+    enum: {
+      values: paymentStatus,
+      message:
+        "{VALUE} is not valid payment status. It can be either 'paid' or 'non-paid' or ''",
+    },
+    default: '',
+  },
+  transactionId: {
+    type: String,
+    default: '',
   },
 });
 

@@ -41,6 +41,14 @@ const auth = (...requiredRoles: TUserRoles[]) => {
       throw new AppError(httpStatus.UNAUTHORIZED, 'User not found!');
     }
 
+    // Check token role & user role same or not
+    if (decoded.role !== user.role) {
+      throw new AppError(
+        httpStatus.UNAUTHORIZED,
+        'Authorization Failed due to invalid token',
+      );
+    }
+
     //Check if the token is before updatedPassword or not
     const passwordChangedTime = user?.changePasswordAt;
     if (

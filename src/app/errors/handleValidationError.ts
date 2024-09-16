@@ -1,11 +1,11 @@
 import httpStatus from 'http-status';
 import mongoose from 'mongoose';
-import { TErrorMessages } from '../interface/error';
+import { TErrorSources } from '../interface/error';
 
 const handleValidationError = (error: mongoose.Error.ValidationError) => {
   const statusCode = httpStatus.BAD_REQUEST;
   const message = 'Validation Error';
-  const errorMessages: TErrorMessages = Object.values(error.errors).map(
+  const errorMessages: TErrorSources = Object.values(error.errors).map(
     (error) => {
       return {
         message: error.message,

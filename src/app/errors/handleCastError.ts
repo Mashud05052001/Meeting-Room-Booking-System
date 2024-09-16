@@ -1,10 +1,10 @@
 import mongoose from 'mongoose';
-import { TErrorMessages } from '../interface/error';
+import { TErrorSources } from '../interface/error';
 
 const handleCastError = (error: mongoose.Error.CastError) => {
   const statusCode = 400;
   const message = 'Cast Error';
-  const errorMessages: TErrorMessages = [
+  const errorMessages: TErrorSources = [
     { path: error.path, message: error.message },
   ];
   return {

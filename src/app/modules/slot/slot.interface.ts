@@ -5,5 +5,7 @@ export type TSlot = {
   date: string;
   startTime: string;
   endTime: string;
+  slotDuration: number;
   isBooked?: boolean;
+  isDeleted?: boolean;
 };

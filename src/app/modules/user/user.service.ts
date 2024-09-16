@@ -17,8 +17,52 @@ import {
 } from './user.utils';
 import config from '../../config';
 import sendEmail from '../../utils/sendEmail';
-import { generateForgetEmail } from './user.constant';
+import { generateResetEmail } from './user.constant';
 
+// Get User Information
+const getUserInfos = async (payload: Pick<TUser, 'email'>) => {
+  const user = await User.findOne({ email: payload.email }).select(
+    '-createdAt -updatedAt -changePasswordAt -__v',
+  );
+  if (!user) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'This email is not found. Please register first!',
+    );
+  }
+  return user;
+};
+
+const updateUser = async (payload: Partial<TUser> & Pick<TUser, 'email'>) => {
+  const result = await User.findOneAndUpdate(
+    { email: payload.email },
+    payload,
+    { new: true },
+  );
+  return result;
+};
+
+const getAllUsers = async () => {
+  const roleOrder = {
+    'super-admin': 1,
+    admin: 2,
+    user: 3,
+  };
+  const users = await User.find();
+  users.sort((a, b) => roleOrder[a.role] - roleOrder[b.role]);
+  return users;
+};
+
+const updateUserRole = async (payload: Pick<TUser, 'email' | 'role'>) => {
+  const result = await User.findOneAndUpdate(
+    { email: payload.email },
+    { role: payload.role },
+    { new: true },
+  );
+  return result;
+};
+
+//! Authentication & Authorization
 /* SignUp
 1. Check the user is already exist or not
 2. bcrypt the password before save
@@ -33,8 +77,15 @@ const signupUser = async (payload: TUser) => {
     );
   }
 
-  const result = await User.create(payload);
-  return result;
+  await User.create(payload);
+  const jwtPayload = {
+    email: payload.email,
+    role: payload.role,
+  };
+  const accessToken = createJwtAccessToken(jwtPayload);
+  const refreshToken = createJwtRefreshToken(jwtPayload);
+
+  return { accessToken, refreshToken, result: 'User created successfully' };
 };
 
 /* Login
@@ -65,7 +116,7 @@ const loginUser = async (payload: Pick<TUser, 'email' | 'password'>) => {
   const accessToken = createJwtAccessToken(jwtPayload);
   const refreshToken = createJwtRefreshToken(jwtPayload);
 
-  return { accessToken, refreshToken, user };
+  return { accessToken, refreshToken, result: 'User Found' };
 };
 
 /* Change-Password
@@ -94,13 +145,13 @@ const changePassword = async (
   }
   const hashedNewPassword = await createHashedPassword(payload?.newPassword);
 
-  const result = await User.findOneAndUpdate(
+  await User.findOneAndUpdate(
     { email: jwtUser?.email },
     { password: hashedNewPassword, changePasswordAt: new Date() },
     { new: true },
   );
 
-  return result;
+  return 'Password changed successfully';
 };
 
 /* Generate-Access-Token
@@ -145,12 +196,11 @@ const generateAccessTokenFromRefreshToken = async (refreshToken: string) => {
 const forgetPassword = async (payload: TForgetPassword) => {
   const user = await User.findOne({
     email: payload.email,
-    phone: payload.phone,
   });
   if (!user) {
     throw new AppError(
       httpStatus.NOT_FOUND,
-      'User is not found in out database. Please provide correct values',
+      'This email is not registered yet. Please signup.',
     );
   }
   const jwtPayload = {
@@ -158,18 +208,22 @@ const forgetPassword = async (payload: TForgetPassword) => {
     role: user?.role,
   };
   const shortTimeAccessToken = createJwtAccessToken(jwtPayload, '10m');
-  const resetURL = `${config.reset_password_url}?email=${payload?.email}&token=${shortTimeAccessToken}`; // new frontend path
+  const resetURL = `${config.reset_password_url}?email=${payload?.email}&token=${shortTimeAccessToken}`;
   // generate a mail using nodemailer & send this
-  const html = generateForgetEmail(user?.name, resetURL);
+  const html = generateResetEmail(user?.name, resetURL);
   await sendEmail(user.email, html, 'high');
   return 'Reset password email send successfull';
+  // return resetURL;
 };
 
 /* Reset-Password
 1. Check the short time token existancy.
 2. Check the token decoded email & user provided email is same or not
-3. Check user existancy
-4. Generate a new hashed password update the password
+3. Check the difference token iat & exp time is 10min (your provided short time) or not
+4. Check user existancy
+5. Check user password is as same as before or not
+6. Check user is changed password more than 1 time or not using this url. For this you have to update change password time while first time updating & after then you can compare resetPasswordTime with token initial time
+7. Generate a new hashed password update the password & update the reset password time
 */
 const resetPassword = async (token: string, payload: TResetPassword) => {
   if (!token) {
@@ -182,19 +236,54 @@ const resetPassword = async (token: string, payload: TResetPassword) => {
       'Token email & provided user email is not matched',
     );
   }
-  const user = await User.findOne({ email: payload.email });
-  if (!user) {
-    throw new AppError(httpStatus.CONFLICT, 'This email is not found.');
+  if ((decodedTokenData.exp! - decodedTokenData.iat!) / 60 !== 10) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'Token not matched. Please again try for password resetting',
+    );
   }
+
+  const user = await User.findUser(payload.email, true);
+  if (!user) {
+    throw new AppError(httpStatus.FORBIDDEN, 'This email is not found.');
+  }
+
+  if (await User.isPasswordValid(payload.password, user?.password)) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "That's your previous password. Please generate a new one or login.",
+    );
+  }
+
+  if (
+    user?.changePasswordAt &&
+    User.isJwtIssueBeforePasswordChange(
+      decodedTokenData.iat!,
+      user?.changePasswordAt,
+    )
+  ) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'You cannot change password more than 1 time using same url.',
+    );
+  }
+
   const hashedNewPassword = await createHashedPassword(payload.password);
   await User.findOneAndUpdate(
     { email: payload.email },
-    { password: hashedNewPassword, changePasswordAt: new Date() },
+    {
+      password: hashedNewPassword,
+      changePasswordAt: new Date(),
+    },
   );
   return 'Password reset successful';
 };
 
 export const UserService = {
+  getUserInfos,
+  updateUser,
+  getAllUsers,
+  updateUserRole,
   signupUser,
   loginUser,
   changePassword,

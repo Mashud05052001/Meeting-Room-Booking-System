@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 // Pleast put first alphabet smallercase carefully
 import { UserValidation } from './user.validation';
 import { UserController } from './user.scontroller';
@@ -6,6 +6,38 @@ import { validateRequest } from '../../middleware/validateRequest';
 import auth from '../../middleware/auth';
 
 const router = Router();
+
+router.get(
+  '/get-user',
+  (req: Request, res: Response, next: NextFunction) => {
+    req.body = req.query;
+    next();
+  },
+  auth('admin', 'super-admin', 'user'),
+  validateRequest(UserValidation.forgetPasswordValidationSchema),
+  UserController.getUserInfos,
+);
+
+// TODO : Super admin cannot update itself
+router.post(
+  '/update-user',
+  auth('admin', 'super-admin', 'user'),
+  validateRequest(UserValidation.updateUserValidationSchema),
+  UserController.updateUserInfos,
+);
+
+router.get(
+  '/all-users',
+  auth('admin', 'super-admin'),
+  UserController.getAllUsers,
+);
+
+router.post(
+  '/change-role',
+  validateRequest(UserValidation.updateUserRoleValidationSchema),
+  auth('admin', 'super-admin'),
+  UserController.updateUserRole,
+);
 
 router.post(
   '/signup',
@@ -22,7 +54,7 @@ router.post(
 router.post(
   '/change-password',
   validateRequest(UserValidation.changePasswordValidationSchema),
-  auth('admin', 'user'),
+  auth('admin', 'user', 'super-admin'),
   UserController.changePassword,
 );
 

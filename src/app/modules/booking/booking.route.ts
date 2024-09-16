@@ -14,7 +14,11 @@ router.post(
   BookingController.createBooking,
 );
 
-router.get('/', auth(userRoles.admin), BookingController.getAllBookings);
+router.get(
+  '/',
+  auth(userRoles.admin, userRoles?.superAdmin),
+  BookingController.getAllBookings,
+);
 router.get(
   '/my-bookings',
   auth(userRoles.user),
@@ -27,5 +31,11 @@ router.put(
   BookingController.updateBooking,
 );
 router.delete('/:id', auth(userRoles.admin), BookingController.deleteBooking);
+
+router.patch(
+  '/canceled/:id',
+  auth(userRoles?.user),
+  BookingController.canceledBookingWhilePaymentCanceled,
+);
 
 export const BookingRoutes = router;

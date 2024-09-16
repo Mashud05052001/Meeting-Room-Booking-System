@@ -3,6 +3,8 @@ export const bookingConfirmationStatus = [
   'unconfirmed',
   'canceled',
 ];
+export const paymentStatus = ['paid', 'non-paid', ''];
+
 export const bookingStatus = {
   confirmed: 'confirmed',
   unconfirmed: 'unconfirmed',

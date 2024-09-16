@@ -10,19 +10,24 @@ const router = Router();
 
 router.post(
   '/',
-  auth(userRoles.admin),
+  auth(userRoles.admin, userRoles.superAdmin),
   validateRequest(RoomValidation.createRoomValidationSchema),
   RoomController.createRoom,
 );
 
 router.get('/', RoomController.getAllRooms);
 router.get('/:id', RoomController.getSingleRoom);
+
 router.put(
   '/:id',
-  auth(userRoles.admin),
+  auth(userRoles.admin, userRoles.superAdmin),
   validateRequest(RoomValidation.updateRoomValidationSchema),
   RoomController.updateRoom,
 );
-router.delete('/:id', auth(userRoles.admin), RoomController.deleteRoom);
+router.delete(
+  '/:id',
+  auth(userRoles.admin, userRoles.superAdmin),
+  RoomController.deleteRoom,
+);
 
 export const RoomRoutes = router;

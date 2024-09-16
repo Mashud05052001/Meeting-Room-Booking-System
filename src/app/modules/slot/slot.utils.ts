@@ -41,8 +41,9 @@ export const timeGenerator = (payload: number) => {
   return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
 };
 
-export const slotsGenerator = (payload: TSlot, slotDuration: number) => {
-  let createdDataWithDynamicSlots: TSlot[] = [];
+export const slotsGenerator = (payload: TSlot) => {
+  const createdDataWithDynamicSlots: TSlot[] = [];
+  const slotDuration = payload?.slotDuration;
   const { startTime, endTime, ...otherData } = payload;
 
   const startTimeInMinute =
@@ -55,8 +56,8 @@ export const slotsGenerator = (payload: TSlot, slotDuration: number) => {
   );
 
   for (let i = 0; i < noOfTotalSlots; i++) {
-    let startTime: string, endTime: string;
-    startTime = timeGenerator(startTimeInMinute + i * slotDuration);
+    const startTime = timeGenerator(startTimeInMinute + i * slotDuration);
+    let endTime: string;
     if (i !== noOfTotalSlots - 1) {
       endTime = timeGenerator(startTimeInMinute + (i + 1) * slotDuration);
     } else {

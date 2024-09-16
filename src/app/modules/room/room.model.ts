@@ -26,6 +26,10 @@ const roomSchema = new Schema<TRoom, TRoomModel>({
     type: [String],
     required: [true, 'Room amenities are required'],
   },
+  pictures: {
+    type: [String],
+    required: [true, 'Room pictures required'],
+  },
   isDeleted: {
     type: Boolean,
     default: false,

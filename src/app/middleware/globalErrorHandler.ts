@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ErrorRequestHandler } from 'express';
-import { TErrorMessages } from '../interface/error';
+import { TErrorSources } from '../interface/error';
 import config from '../config';
 import { ZodError } from 'zod';
 import handleZodError from '../errors/handleZodError';
@@ -13,13 +13,12 @@ import httpStatus from 'http-status';
 const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   let statusCode = 500,
     message = `Something went wrong!`,
-    errorMessages: TErrorMessages = [
+    errorSources: TErrorSources = [
       {
         path: '',
         message: `Something went wrong!`,
       },
     ];
-
   const getModifiedError = () => {
     if (err instanceof ZodError) return handleZodError(err);
     else if (err?.name === 'ValidationError') return handleValidationError(err);
@@ -32,31 +31,30 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   if (modifiedError) {
     statusCode = modifiedError.statusCode;
     message = modifiedError.message;
-    errorMessages = modifiedError.errorMessages;
+    errorSources = modifiedError.errorMessages;
   } else if (err instanceof AppError) {
     statusCode = err?.statusCode;
     message = err?.message;
-    errorMessages = [{ path: '', message: err.message }];
+    errorSources = [{ path: '', message: err.message }];
   } else if (err instanceof Error) {
     message = err?.message;
-    errorMessages = [{ path: '', message: err.message }];
+    errorSources = [{ path: '', message: err.message }];
   }
 
-  if (err?.statusCode === httpStatus.UNAUTHORIZED) {
-    res.status(err?.statusCode).json({
-      success: false,
-      statusCode: err?.statusCode,
-      message: 'Unauthorized access',
-    });
-  } else {
-    res.status(statusCode).json({
-      success: false,
-      statusCode,
-      message,
-      errorMessages,
-      stack: config.node_env === 'development' ? err?.stack : null,
-    });
-  }
+  // if (err?.statusCode === httpStatus.UNAUTHORIZED) {
+  //   res.status(err?.statusCode).json({
+  //     success: false,
+  //     statusCode: err?.statusCode,
+  //     message: 'Unauthorized access',
+  //   });
+  // } else {
+  res.status(statusCode).json({
+    success: false,
+    message,
+    errorSources,
+    stack: config.node_env === 'development' ? err?.stack : null,
+  });
+  // }
 };
 
 export default globalErrorHandler;

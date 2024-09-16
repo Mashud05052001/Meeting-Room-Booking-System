@@ -21,6 +21,81 @@ import { JwtPayload } from 'jsonwebtoken';
     c. create find operation to send the data of the booking using populate function
 */
 
+const createBookingBeforePayment = async (payload: TBooking) => {
+  const { date, slots: providedSlots, room: roomId, user: userId } = payload;
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, "User doesn't exist");
+  }
+  const room = await Room.findRoom(roomId.toString());
+  if (!room) {
+    throw new AppError(httpStatus.NOT_FOUND, "Room doesn't exist");
+  }
+  if (room?.isDeleted) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Room is already deleted');
+  }
+  const availableSlots = await Slot.find({
+    date,
+    _id: { $in: providedSlots },
+    room: roomId,
+    isBooked: false,
+  });
+  const availableSlotIds = availableSlots.map((slot) => slot._id.toString());
+  const unavailableSlots = providedSlots.filter(
+    (slot) => !availableSlotIds.includes(slot.toString()),
+  );
+  if (unavailableSlots.length > 0) {
+    throw new AppError(
+      httpStatus.CONFLICT,
+      `Slots with those id's are already booked or deleted. ID: ${unavailableSlots}`,
+    );
+  }
+
+  const result = await Booking.create(payload);
+  return result;
+};
+
+const updateBookingAfterSuccessfullPayment = async (
+  bookingId: string,
+  transactionId: string,
+) => {
+  const bookingInfo = await Booking.findById(bookingId);
+  const slots = bookingInfo?.slots;
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    // session 1 =>
+
+    const updateIsBookedStatusOnSlots = await Slot.updateMany(
+      { _id: { $in: slots } },
+      { isBooked: true },
+      { new: true, session },
+    );
+    if (!updateIsBookedStatusOnSlots) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Failed to update slot booking status',
+      );
+    }
+
+    // session 2
+
+    const result = await Booking.findByIdAndUpdate(
+      bookingId,
+      { paymentStatus: 'paid', transactionId, isConfirmed: 'unconfirmed' },
+      { session },
+    );
+
+    await session.commitTransaction();
+    await session.endSession();
+    return result;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw new AppError(httpStatus.BAD_REQUEST, 'Failed to create bookings');
+  }
+};
+
 const createBookingIntoDB = async (payload: TBooking) => {
   const { date, slots: providedSlots, room: roomId, user: userId } = payload;
   const user = await User.findById(userId);
@@ -47,7 +122,7 @@ const createBookingIntoDB = async (payload: TBooking) => {
   if (unavailableSlots.length > 0) {
     throw new AppError(
       httpStatus.NOT_FOUND,
-      `Slots with those ids are unavailable or deleted. ID: ${unavailableSlots}`,
+      `Slots with those ids are unavailable or deleted. ID: <strong>${unavailableSlots}</strong>`,
     );
   }
   const session = await mongoose.startSession();
@@ -101,21 +176,51 @@ const createBookingIntoDB = async (payload: TBooking) => {
 
 const getAllBookingsFromDB = async () => {
   const result = await Booking.find()
-    .populate('slots')
-    .populate('room')
-    .populate('user');
-  return result;
+    .populate({
+      path: 'slots',
+      select: '_id date startTime endTime',
+    })
+    .populate({
+      path: 'room',
+      select: '_id name',
+    })
+    .populate({
+      path: 'user',
+      select: '_id name email',
+    });
+  const sortOrder = {
+    unconfirmed: 1,
+    confirmed: 2,
+    canceled: 3,
+  };
+  const sortedResult = result.sort((a, b) => {
+    return sortOrder[a.isConfirmed!] - sortOrder[b.isConfirmed!];
+  });
+  return sortedResult;
 };
 
 const getSingleUserBookingsFromDB = async (payload: JwtPayload) => {
   const user = await User.findOne({ email: payload?.email }, { _id: 1 });
+
   const result = await Booking.find(
     { user: user?._id, isDeleted: false },
     { user: 0 },
   )
-    .populate('slots')
+    .populate({
+      path: 'slots',
+      select: '_id date startTime endTime slotDuration',
+    })
     .populate('room');
-  return result;
+  const sortOrder = {
+    confirmed: 1,
+    unconfirmed: 2,
+    canceled: 3,
+  };
+  const sortedResult = result.sort((a, b) => {
+    return sortOrder[a.isConfirmed!] - sortOrder[b.isConfirmed!];
+  });
+
+  return sortedResult;
 };
 
 /*
@@ -217,7 +322,36 @@ const updateBookingIntoDB = async (
           'Failed to update Booking confirmed status',
         );
       }
-    } else if (
+    } else {
+      const updateSlots = await Slot.updateMany(
+        {
+          _id: { $in: allSlots },
+        },
+        { isBooked: false },
+        { new: true, session },
+      );
+      if (!updateSlots) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Failed to update slot booking status',
+        );
+      }
+
+      result = await Booking.findByIdAndUpdate(
+        id,
+        { isConfirmed: updatedConfirmedStatus },
+        { new: true, session },
+      );
+      if (!result) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Failed to update Booking confirmed status',
+        );
+      }
+    }
+
+    /*
+    else if (
       prevConfirmedStatus === bookingStatus.confirmed &&
       updatedConfirmedStatus === bookingStatus.canceled
     ) {
@@ -246,7 +380,8 @@ const updateBookingIntoDB = async (
           'Failed to update Booking confirmed status',
         );
       }
-    } else if (
+    }
+    else if (
       prevConfirmedStatus === bookingStatus.unconfirmed &&
       updatedConfirmedStatus === bookingStatus.canceled
     ) {
@@ -262,7 +397,7 @@ const updateBookingIntoDB = async (
         );
       }
     }
-
+ */
     await session.commitTransaction();
     await session.endSession();
     return result;
@@ -318,10 +453,19 @@ const deleteBookingFromDB = async (id: string) => {
   }
 };
 
+// it's only happen in payment system when payment is cancelled
+const canceledBookingWhilePaymentCanceled = async (id: string) => {
+  await Booking.findByIdAndUpdate(id, { isConfirmed: 'canceled' });
+  return 'Booking canceled successfully';
+};
+
 export const BookingService = {
+  createBookingBeforePayment,
+  updateBookingAfterSuccessfullPayment,
   createBookingIntoDB,
   getAllBookingsFromDB,
   getSingleUserBookingsFromDB,
   updateBookingIntoDB,
   deleteBookingFromDB,
+  canceledBookingWhilePaymentCanceled,
 };

@@ -34,6 +34,11 @@ const userSchema = new Schema<TUser, TUserModel>(
         values: userRolesArray,
         message: `{VALUE} is not a valid role. Role can be either 'user' or 'admin'`,
       },
+      default: 'user',
+    },
+    profilePicture: {
+      type: String,
+      default: '',
     },
     changePasswordAt: {
       type: Date,

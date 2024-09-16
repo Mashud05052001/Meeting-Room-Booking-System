@@ -10,4 +10,6 @@ export type TBooking = {
   totalAmount?: number;
   isConfirmed?: TConfirmed;
   isDeleted?: boolean;
+  paymentStatus?: 'paid' | 'non-paid' | '';
+  transactionId?: string;
 };

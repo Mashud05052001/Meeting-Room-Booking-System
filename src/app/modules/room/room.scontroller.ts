@@ -3,7 +3,7 @@ import { catchAsync } from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { RoomService } from './room.service';
 
-const createRoom = catchAsync(async (req, res, next) => {
+const createRoom = catchAsync(async (req, res) => {
   const data = req?.body;
   const result = await RoomService.createRoomIntoDB(data);
   sendResponse(res, {
@@ -14,8 +14,8 @@ const createRoom = catchAsync(async (req, res, next) => {
   });
 });
 
-const getAllRooms = catchAsync(async (req, res, next) => {
-  const result = await RoomService.getAllRoomsFromDB();
+const getAllRooms = catchAsync(async (req, res) => {
+  const result = await RoomService.getAllRoomsFromDB(req?.query);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -24,8 +24,8 @@ const getAllRooms = catchAsync(async (req, res, next) => {
   });
 });
 
-const getSingleRoom = catchAsync(async (req, res, next) => {
-  const { id } = req?.params;
+const getSingleRoom = catchAsync(async (req, res) => {
+  const { id } = req.params;
   const result = await RoomService.getSingleRoomFromDB(id);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -35,9 +35,9 @@ const getSingleRoom = catchAsync(async (req, res, next) => {
   });
 });
 
-const updateRoom = catchAsync(async (req, res, next) => {
+const updateRoom = catchAsync(async (req, res) => {
   const data = req?.body;
-  const { id } = req?.params;
+  const { id } = req.params;
   const result = await RoomService.updateRoomIntoDB(id, data);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -47,8 +47,8 @@ const updateRoom = catchAsync(async (req, res, next) => {
   });
 });
 
-const deleteRoom = catchAsync(async (req, res, next) => {
-  const { id } = req?.params;
+const deleteRoom = catchAsync(async (req, res) => {
+  const { id } = req.params;
   const result = await RoomService.deleteRoomFromDB(id);
   sendResponse(res, {
     statusCode: httpStatus.OK,

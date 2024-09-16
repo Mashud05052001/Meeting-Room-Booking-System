@@ -22,6 +22,49 @@ const signupValidationSchema = z.object({
       required_error: 'User address is required',
       invalid_type_error: 'User address must be string',
     }),
+    role: z
+      .enum(userRolesArray as [string, ...string[]], {
+        required_error: 'User role is required',
+        invalid_type_error: `User role can be either 'user' or 'admin'`,
+      })
+      .default('user')
+      .optional(),
+  }),
+});
+
+const updateUserValidationSchema = z.object({
+  body: z.object({
+    name: z
+      .string({
+        invalid_type_error: 'User name must be string',
+      })
+      .optional(),
+    email: z
+      .string({ required_error: 'User email is required' })
+      .email({ message: 'Provide a valid email' }),
+    phone: z
+      .string({
+        invalid_type_error: 'User phone number must be string',
+      })
+      .optional(),
+    address: z
+      .string({
+        invalid_type_error: 'User address must be string',
+      })
+      .optional(),
+    profilePicture: z
+      .string({
+        invalid_type_error: 'Profile picture must be string',
+      })
+      .url()
+      .optional(),
+  }),
+});
+const updateUserRoleValidationSchema = z.object({
+  body: z.object({
+    email: z
+      .string({ required_error: 'User email is required' })
+      .email({ message: 'Provide a valid email' }),
     role: z.enum(userRolesArray as [string, ...string[]], {
       required_error: 'User role is required',
       invalid_type_error: `User role can be either 'user' or 'admin'`,
@@ -67,10 +110,6 @@ const forgetPasswordValidationSchema = z.object({
     email: z
       .string({ required_error: 'User email is required' })
       .email({ message: 'Provide a valid email' }),
-    phone: z.string({
-      required_error: 'User phone number is required',
-      invalid_type_error: 'User phone number must be string',
-    }),
   }),
 });
 
@@ -88,6 +127,8 @@ const resetPasswordValidationSchema = z.object({
 
 export const UserValidation = {
   signupValidationSchema,
+  updateUserValidationSchema,
+  updateUserRoleValidationSchema,
   loginValidationSchema,
   changePasswordValidationSchema,
   generateAccessTokenValidationSchema,

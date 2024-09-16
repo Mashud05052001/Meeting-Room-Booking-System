@@ -46,3 +46,11 @@ export const createHashedPassword = async (password: string) => {
   );
   return hashedPassword;
 };
+
+export const compareHashedPasswordWithPlainText = async (
+  hashedPassword: string,
+  plainText: string,
+) => {
+  const result = await bcrypt.compare(hashedPassword, plainText);
+  return result;
+};

@@ -6,13 +6,14 @@ export type TUser = {
   password: string;
   phone: string;
   address: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'super-admin';
+  profilePicture?: string;
   changePasswordAt?: Date;
 };
 
 export type TJwtPayload = {
   email: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'super-admin';
 };
 
 export type TChangePassword = {
@@ -20,7 +21,7 @@ export type TChangePassword = {
   newPassword: string;
 };
 
-export type TForgetPassword = Pick<TUser, 'email' | 'phone'>;
+export type TForgetPassword = Pick<TUser, 'email'>;
 
 export type TResetPassword = Pick<TUser, 'email' | 'password'>;
 

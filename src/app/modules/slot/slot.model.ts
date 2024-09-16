@@ -19,7 +19,15 @@ const slotSchema = new Schema<TSlot>({
     type: String,
     required: [true, 'Slot ending time is required'],
   },
+  slotDuration: {
+    type: Number,
+    required: [true, 'Slot duration is required'],
+  },
   isBooked: {
+    type: Boolean,
+    default: false,
+  },
+  isDeleted: {
     type: Boolean,
     default: false,
   },

@@ -1,13 +1,14 @@
-export const userRolesArray = ['user', 'admin'];
+export const userRolesArray = ['user', 'admin', 'super-admin'];
 
 export const userRoles = {
   user: 'user',
   admin: 'admin',
+  superAdmin: 'super-admin',
 } as const;
 
-export type TUserRoles = keyof typeof userRoles;
+export type TUserRoles = 'user' | 'admin' | 'super-admin';
 
-export const generateForgetEmail = (userName: string, url: string) => {
+export const generateResetEmail = (userName: string, url: string) => {
   return `
     <!DOCTYPE html>
     <html lang="en">
