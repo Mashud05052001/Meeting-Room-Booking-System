@@ -21,6 +21,13 @@ export type TChangePassword = {
   newPassword: string;
 };
 
+export type TSendContactEmail = {
+  userName: string;
+  userEmail: string;
+  message: string;
+  sendToEmail: string;
+};
+
 export type TForgetPassword = Pick<TUser, 'email'>;
 
 export type TResetPassword = Pick<TUser, 'email' | 'password'>;

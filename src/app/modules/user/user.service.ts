@@ -6,6 +6,7 @@ import {
   TForgetPassword,
   TUser,
   TResetPassword,
+  TSendContactEmail,
 } from './user.interface';
 import { User } from './user.model';
 import {
@@ -17,7 +18,7 @@ import {
 } from './user.utils';
 import config from '../../config';
 import sendEmail from '../../utils/sendEmail';
-import { generateResetEmail } from './user.constant';
+import { generateResetEmail, generateSendContactEmail } from './user.constant';
 
 // Get User Information
 const getUserInfos = async (payload: Pick<TUser, 'email'>) => {
@@ -279,6 +280,13 @@ const resetPassword = async (token: string, payload: TResetPassword) => {
   return 'Password reset successful';
 };
 
+const sendContactEmail = async (payload: TSendContactEmail) => {
+  const { message, sendToEmail, userEmail, userName } = payload;
+  const html = generateSendContactEmail(userName, userEmail, message);
+  await sendEmail(sendToEmail, html, 'normal', userEmail, 'QMeet Contact Us');
+  return 'Email send successfull';
+};
+
 export const UserService = {
   getUserInfos,
   updateUser,
@@ -290,4 +298,5 @@ export const UserService = {
   generateAccessTokenFromRefreshToken,
   forgetPassword,
   resetPassword,
+  sendContactEmail,
 };

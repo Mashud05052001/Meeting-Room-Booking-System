@@ -7,6 +7,8 @@ const sendEmail = async (
   to: string,
   html: string,
   priority: 'high' | 'low' | 'normal' = 'normal',
+  replyTo: string = 'queue-meet@support.com',
+  subject: string = 'User password change mail',
 ) => {
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
@@ -22,10 +24,10 @@ const sendEmail = async (
     const info = await transporter.sendMail({
       from: `Queue-Meet ${config.nodemailer_auth_user_email}`,
       to,
-      subject: 'User password change mail',
+      subject,
       text: 'Reset your password withen 10 minutes',
       priority,
-      replyTo: 'queue-meet@support.com',
+      replyTo,
       html,
     });
     console.log('Message sent: %s', info.messageId);

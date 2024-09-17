@@ -26,11 +26,15 @@ router.get(
 );
 router.put(
   '/:id',
-  auth(userRoles.admin),
+  auth(userRoles.admin, userRoles?.superAdmin),
   validateRequest(BookingValidation.updateBookingValidationSchema),
   BookingController.updateBooking,
 );
-router.delete('/:id', auth(userRoles.admin), BookingController.deleteBooking);
+router.delete(
+  '/:id',
+  auth(userRoles.admin, userRoles?.superAdmin),
+  BookingController.deleteBooking,
+);
 
 router.patch(
   '/canceled/:id',

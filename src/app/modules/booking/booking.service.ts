@@ -175,7 +175,7 @@ const createBookingIntoDB = async (payload: TBooking) => {
 };
 
 const getAllBookingsFromDB = async () => {
-  const result = await Booking.find()
+  const result = await Booking.find({ isDeleted: false })
     .populate({
       path: 'slots',
       select: '_id date startTime endTime',

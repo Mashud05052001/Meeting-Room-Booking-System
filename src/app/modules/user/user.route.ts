@@ -18,7 +18,6 @@ router.get(
   UserController.getUserInfos,
 );
 
-// TODO : Super admin cannot update itself
 router.post(
   '/update-user',
   auth('admin', 'super-admin', 'user'),
@@ -74,6 +73,12 @@ router.post(
   '/reset-password',
   validateRequest(UserValidation.resetPasswordValidationSchema),
   UserController.resetPassword,
+);
+
+router.post(
+  '/send-contact-email',
+  validateRequest(UserValidation.sendEmailValidationSchem),
+  UserController.sendContactEmail,
 );
 
 export const UserRoutes = router;

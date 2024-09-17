@@ -136,6 +136,16 @@ const resetPassword = catchAsync(async (req, res) => {
   });
 });
 
+const sendContactEmail = catchAsync(async (req, res) => {
+  const result = await UserService.sendContactEmail(req.body);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Email send successfully',
+    data: result,
+  });
+});
+
 export const UserController = {
   getUserInfos,
   updateUserInfos,
@@ -147,4 +157,5 @@ export const UserController = {
   generateAccessTokenFromRefreshToken,
   forgetPassword,
   resetPassword,
+  sendContactEmail,
 };
