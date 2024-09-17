@@ -67,7 +67,7 @@ const getAllSlotsFromDB = async (query: Record<string, unknown>) => {
   const searchQuery: Record<string, unknown> = {
     isDeleted: false,
   };
-  console.log(query);
+
   if (Object.keys(query).length > 0) {
     if (query?.isBooked)
       searchQuery.isBooked = query.isBooked === 'false' ? false : true;

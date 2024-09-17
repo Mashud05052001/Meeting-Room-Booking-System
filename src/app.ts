@@ -8,14 +8,22 @@ import { allRoutes } from './app/routes';
 const app: Application = express();
 
 // parser
-app.use(cors({ origin: ['http://localhost:5173'], credentials: true }));
+app.use(
+  cors({
+    origin: [
+      'https://meeting-room-booking-system-frontend.vercel.app',
+      'http://localhost:5173',
+    ],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(cookieParser());
 
 app.get('/', (req: Request, res: Response) => {
   res.json({
     success: true,
-    message: 'The server is running seccessfully',
+    message: 'The server is running successfully',
   });
 });
 
