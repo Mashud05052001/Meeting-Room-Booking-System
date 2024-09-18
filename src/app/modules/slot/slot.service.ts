@@ -67,7 +67,6 @@ const getAllSlotsFromDB = async (query: Record<string, unknown>) => {
   const searchQuery: Record<string, unknown> = {
     isDeleted: false,
   };
-
   if (Object.keys(query).length > 0) {
     if (query?.isBooked)
       searchQuery.isBooked = query.isBooked === 'false' ? false : true;
@@ -79,6 +78,69 @@ const getAllSlotsFromDB = async (query: Record<string, unknown>) => {
     if (query?.slotDuration)
       searchQuery.slotDuration = Number(query.slotDuration);
   }
+
+  // const result = await Slot.aggregate([
+  //   {
+  //     $match: {
+  //       ...searchQuery,
+  //     },
+  //   },
+  //   {
+  //     $group: {
+  //       _id: { room: '$room', date: '$date' },
+  //       slots: {
+  //         $push: {
+  //           _id: '$_id',
+  //           startTime: '$startTime',
+  //           endTime: '$endTime',
+  //           slotDuration: '$slotDuration',
+  //           isBooked: '$isBooked',
+  //           isDeleted: '$isDeleted',
+  //         },
+  //       },
+  //     },
+  //   },
+  //   {
+  //     $group: {
+  //       _id: { room: '$_id.room' },
+  //       specificDateSlots: {
+  //         $push: {
+  //           date: '$_id.date',
+  //           slots: '$slots',
+  //         },
+  //       },
+  //     },
+  //   },
+  //   {
+  //     $lookup: {
+  //       from: 'rooms',
+  //       localField: '_id.room',
+  //       foreignField: '_id',
+  //       as: 'roomInfo',
+  //     },
+  //   },
+  //   {
+  //     $unwind: {
+  //       path: '$roomInfo',
+  //       preserveNullAndEmptyArrays: true,
+  //     },
+  //   },
+  //   {
+  //     $project: {
+  //       _id: 0,
+  //       room: '$_id.room',
+  //       roomInfo: 1,
+  //       specificDateSlots: 1,
+  //     },
+  //   },
+  // ]);
+
+  // return result;
+
+  const limit = Number(query?.limit) || 10; // Number of slots per page
+  const page = Number(query?.page) || 1; // Current page (can be passed as a query parameter)
+  const skip = (page - 1) * limit; // Calculate how many slots to skip
+
   const result = await Slot.aggregate([
     {
       $match: {
@@ -86,55 +148,89 @@ const getAllSlotsFromDB = async (query: Record<string, unknown>) => {
       },
     },
     {
-      $group: {
-        _id: { room: '$room', date: '$date' },
-        slots: {
-          $push: {
-            _id: '$_id',
-            startTime: '$startTime',
-            endTime: '$endTime',
-            slotDuration: '$slotDuration',
-            isBooked: '$isBooked',
-            isDeleted: '$isDeleted',
+      $facet: {
+        paginatedResults: [
+          {
+            $skip: skip,
           },
-        },
-      },
-    },
-    {
-      $group: {
-        _id: { room: '$_id.room' },
-        specificDateSlots: {
-          $push: {
-            date: '$_id.date',
-            slots: '$slots',
+          {
+            $limit: limit,
           },
-        },
-      },
-    },
-    {
-      $lookup: {
-        from: 'rooms',
-        localField: '_id.room',
-        foreignField: '_id',
-        as: 'roomInfo',
-      },
-    },
-    {
-      $unwind: {
-        path: '$roomInfo',
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        room: '$_id.room',
-        roomInfo: 1,
-        specificDateSlots: 1,
+          {
+            $group: {
+              _id: { room: '$room', date: '$date' },
+              slots: {
+                $push: {
+                  _id: '$_id',
+                  startTime: '$startTime',
+                  endTime: '$endTime',
+                  slotDuration: '$slotDuration',
+                  isBooked: '$isBooked',
+                  isDeleted: '$isDeleted',
+                },
+              },
+            },
+          },
+          {
+            $group: {
+              _id: { room: '$_id.room' },
+              specificDateSlots: {
+                $push: {
+                  date: '$_id.date',
+                  slots: '$slots',
+                },
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: 'rooms',
+              localField: '_id.room',
+              foreignField: '_id',
+              as: 'roomInfo',
+            },
+          },
+          {
+            $unwind: {
+              path: '$roomInfo',
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              room: '$_id.room',
+              roomInfo: 1,
+              specificDateSlots: 1,
+            },
+          },
+        ],
+        totalCount: [
+          {
+            $group: {
+              _id: null,
+              totalData: { $sum: 1 },
+            },
+          },
+        ],
       },
     },
   ]);
-  return result;
+
+  const paginatedResults = result[0].paginatedResults;
+  const totalData = result[0].totalCount[0]?.totalData || 0;
+  const totalPage = Math.ceil(totalData / limit);
+
+  return {
+    data: paginatedResults,
+    meta: {
+      totalData,
+      limit,
+      page,
+      skip,
+      totalPage,
+    },
+  };
 };
 
 /* Get All Slots

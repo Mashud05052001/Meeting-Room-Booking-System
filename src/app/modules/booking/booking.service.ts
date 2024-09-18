@@ -65,7 +65,6 @@ const updateBookingAfterSuccessfullPayment = async (
   try {
     session.startTransaction();
     // session 1 =>
-
     const updateIsBookedStatusOnSlots = await Slot.updateMany(
       { _id: { $in: slots } },
       { isBooked: true },

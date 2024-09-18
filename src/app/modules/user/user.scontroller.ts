@@ -60,7 +60,7 @@ const updateUserRole = catchAsync(async (req, res) => {
 //! Authentication & Authorization
 const signupUser = catchAsync(async (req, res) => {
   const data = req?.body;
-  console.log(data);
+
   const { accessToken, refreshToken, result } =
     await UserService.signupUser(data);
   sendCookies(res, refreshToken);
@@ -88,7 +88,6 @@ const loginUser = catchAsync(async (req, res) => {
 });
 
 const changePassword = catchAsync(async (req, res) => {
-  console.log(req?.user, req?.body);
   const result = await UserService.changePassword(
     req.user as TJwtPayload,
     req.body,

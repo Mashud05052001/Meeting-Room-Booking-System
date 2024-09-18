@@ -40,16 +40,19 @@ const createPayment = catchAsync(async (req, res) => {
 const confirmationPayment = catchAsync(async (req, res) => {
   const bookingId = req?.query?.bookingId as string;
   const transactionId = req?.query?.transactionId as string;
-  console.log(transactionId, 'mashuidu');
 
   const paymentVerification = await verifyPayment(transactionId);
   let message = '',
     description = '',
     className = '',
     icon = '';
-  const confirmationHtmlFilePath = path.join(__dirname, './payment.html');
+  console.log(__dirname);
+  const confirmationHtmlFilePath = path.join(
+    __dirname,
+    '../../../public/payment.html',
+  );
   let templete = fs.readFileSync(confirmationHtmlFilePath, 'utf-8');
-  console.log(paymentVerification);
+
   if (paymentVerification.pay_status === 'Successful') {
     await BookingService.updateBookingAfterSuccessfullPayment(
       bookingId,

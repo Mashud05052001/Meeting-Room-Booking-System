@@ -4,8 +4,12 @@ import notFound from './app/middleware/notFound';
 import globalErrorHandler from './app/middleware/globalErrorHandler';
 import cookieParser from 'cookie-parser';
 import { allRoutes } from './app/routes';
+import path from 'path';
 
 const app: Application = express();
+
+console.log(__dirname);
+app.use(express.static(path.join(__dirname, `../public`)));
 
 // parser
 app.use(
